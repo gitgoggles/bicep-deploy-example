@@ -1,13 +1,17 @@
 name: Infrastructure
 
 on:
-  # push:
-  #   branches:
-  #     - main
-  #   paths:
-  #     - "infra/**"
-  #     - ".github/workflows/infrastructure.yml"
+  push:
+    branches:
+      - main
+      - staging
+    paths:
+      - "infra/**"
+      - ".github/workflows/infrastructure.yml"
   workflow_dispatch:
+
+env:
+  DEPLOYMENT_ENVIRONMENT: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
 
 jobs:
   validate:
@@ -23,15 +27,15 @@ jobs:
         run: az bicep build --file infra/main.bicep --stdout > /dev/null
 
       - name: Compile parameters
-        run: az bicep build-params --file infra/main.bicepparam --stdout > /dev/null
+        run: az bicep build-params --file infra/$DEPLOYMENT_ENVIRONMENT.bicepparam --stdout > /dev/null
 
   deploy:
     name: Deploy production infrastructure
     needs: validate
     runs-on: ubuntu-latest
-    environment: production
+    environment: ${{ env.DEPLOYMENT_ENVIRONMENT }}
     concurrency:
-      group: production-deployment
+      group: ${{ env.DEPLOYMENT_ENVIRONMENT }}-deployment
       cancel-in-progress: false
     permissions:
       contents: read
@@ -49,8 +53,8 @@ jobs:
 
       - name: Preview infrastructure changes
         run: |
-          az deployment sub what-if --name bicep-deploy-example-prod --location uksouth --template-file infra/main.bicep --parameters infra/main.bicepparam
+          az deployment sub what-if --name $DEPLOYMENT_ENVIRONMENT --location westcentralus --template-file infra/main.bicep --parameters infra/$DEPLOYMENT_ENVIRONMENT.bicepparam
 
       - name: Deploy infrastructure
         run: |
-          az deployment sub create --name bicep-deploy-example-prod --location uksouth --template-file infra/main.bicep --parameters infra/main.bicepparam --only-show-errors
+          az deployment sub create --name $DEPLOYMENT_ENVIRONMENT --location westcentralus --template-file infra/main.bicep --parameters infra/$DEPLOYMENT_ENVIRONMENT.bicepparam --only-show-errors

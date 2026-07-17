@@ -1,24 +1,15 @@
 targetScope = 'subscription'
 
-@description('Name of the resource group to create or update.')
 param resourceGroupName string
-
-@description('Azure region for the resource group and App Service resources.')
-param location string = deployment().location
-
-@description('Short workload name used in resource names.')
-param workloadName string = 'bicep-deploy-example'
+param location string
+param workloadName string
 
 @allowed([
-  'dev'
-  'test'
-  'prod'
+  'production'
+  'staging'
 ])
-@description('Deployment environment name.')
 param environmentName string
-
-@description('App Service Plan SKU. F1 is intended only for demonstration and low-traffic use.')
-param appServicePlanSku string = 'F1'
+param appServicePlanSku string
 
 var tags = {
   environment: environmentName

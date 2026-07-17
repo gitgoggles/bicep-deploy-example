@@ -1,16 +1,20 @@
 name: Application
 
 on:
-  # push:
-  #   branches:
-  #     - main
-  #   paths:
-  #     - "src/**"
+  push:
+    branches:
+      - main
+      - staging
+    paths:
+      - "CoolWebApp/**"
   workflow_dispatch:
+
+env:
+  DEPLOYMENT_ENVIRONMENT: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
 
 jobs:
   build:
-    name: Build API
+    name: Build Package
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -43,12 +47,12 @@ jobs:
           retention-days: 1
 
   deploy:
-    name: Deploy production API
+    name: Deploy Package
     needs: build
     runs-on: ubuntu-latest
-    environment: production
+    environment: ${{ env.DEPLOYMENT_ENVIRONMENT }}
     concurrency:
-      group: production-deployment
+      group: ${{ env.DEPLOYMENT_ENVIRONMENT }}-deployment
       cancel-in-progress: false
     permissions:
       contents: read
@@ -71,14 +75,14 @@ jobs:
         id: infrastructure
         shell: bash
         run: |
-          web_app_name="$(az deployment sub show --name bicep-deploy-example-prod --query properties.outputs.webAppName.value --output tsv)"
+          web_app_name="$(az deployment sub show --name $DEPLOYMENT_ENVIRONMENT --query properties.outputs.webAppName.value --output tsv)"
           if [[ -z "$web_app_name" ]]; then
             echo 'The infrastructure deployment did not return a Web App name.' >&2
             exit 1
           fi
           echo "web_app_name=$web_app_name" >> "$GITHUB_OUTPUT"
 
-      - name: Deploy API
+      - name: Deploy to Azure
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ steps.infrastructure.outputs.web_app_name }}
