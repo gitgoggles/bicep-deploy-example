@@ -1,0 +1,85 @@
+name: Application
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "src/**"
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build API
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Restore
+        run: dotnet restore CoolWebApp/CoolWebApp.csproj
+
+      - name: Publish
+        run: dotnet publish CoolWebApp/CoolWebApp.csproj --configuration Release --no-restore --output "${{ runner.temp }}/publish"
+
+      - name: Create deployment package
+        run: |
+          cd "${{ runner.temp }}/publish"
+          zip -r "${{ runner.temp }}/CoolWebApp.zip" .
+
+      - name: Upload deployment package
+        uses: actions/upload-artifact@v4
+        with:
+          name: CoolWebApp-package
+          path: ${{ runner.temp }}/CoolWebApp.zip
+          if-no-files-found: error
+          retention-days: 1
+
+  deploy:
+    name: Deploy production API
+    needs: build
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency:
+      group: production-deployment
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Download deployment package
+        uses: actions/download-artifact@v4
+        with:
+          name: CoolWebApp-package
+          path: ${{ runner.temp }}
+
+      - name: Log in to Azure with OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Read Web App name from infrastructure deployment
+        id: infrastructure
+        shell: bash
+        run: |
+          web_app_name="$(az deployment sub show --name bicep-deploy-example-prod --query properties.outputs.webAppName.value --output tsv)"
+          if [[ -z "$web_app_name" ]]; then
+            echo 'The infrastructure deployment did not return a Web App name.' >&2
+            exit 1
+          fi
+          echo "web_app_name=$web_app_name" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy API
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ steps.infrastructure.outputs.web_app_name }}
+          package: ${{ runner.temp }}/CoolWebApp.zip
