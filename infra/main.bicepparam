@@ -1,8 +1,7 @@
 using './main.bicep'
 
-param resourceGroupName = 'rg-myapp-dev-uks'
+param resourceGroupName = 'rg-bicep-deploy-example-prod-uks'
 param location = 'uksouth'
-param namePrefix = 'myapp'
-param environmentName = 'dev'
-param postgresAdminLogin = 'pgadminuser'
-// Supply the secure password at deployment time instead of storing it here.
+param workloadName = 'bicep-deploy-example'
+param environmentName = 'prod'
+param appServicePlanSku = 'F1'

@@ -1,29 +1,28 @@
 targetScope = 'subscription'
 
-@description('Name of the resource group to create.')
+@description('Name of the resource group to create or update.')
 param resourceGroupName string
 
-@description('Azure region for the resource group and regional resources.')
+@description('Azure region for the resource group and App Service resources.')
 param location string = deployment().location
 
-@description('Short, globally unique prefix used in resource names. Use lowercase letters and numbers only.')
-@minLength(3)
-@maxLength(12)
-param namePrefix string
+@description('Short workload name used in resource names.')
+param workloadName string = 'bicep-deploy-example'
 
-@description('PostgreSQL administrator login name.')
-param postgresAdminLogin string
+@allowed([
+  'dev'
+  'test'
+  'prod'
+])
+@description('Deployment environment name.')
+param environmentName string
 
-@secure()
-@description('PostgreSQL administrator password.')
-param postgresAdminPassword string
-
-@description('Environment tag, for example dev, test, or prod.')
-param environmentName string = 'dev'
+@description('App Service Plan SKU. F1 is intended only for demonstration and low-traffic use.')
+param appServicePlanSku string = 'F1'
 
 var tags = {
   environment: environmentName
-  workload: 'react-dotnet-postgresql'
+  workload: workloadName
   managedBy: 'bicep'
 }
 
@@ -34,19 +33,18 @@ resource resourceGroup 'Microsoft.Resources/resourceGroups@2025-04-01' = {
 }
 
 module application './application.bicep' = {
-  name: 'application-${uniqueString(resourceGroup.id)}'
+  name: 'application-${environmentName}'
   scope: resourceGroup
   params: {
+    appServicePlanSku: appServicePlanSku
+    environmentName: environmentName
     location: location
-    namePrefix: namePrefix
-    postgresAdminLogin: postgresAdminLogin
-    postgresAdminPassword: postgresAdminPassword
     tags: tags
+    workloadName: workloadName
   }
 }
 
 output resourceGroupName string = resourceGroup.name
-output staticWebAppHostname string = application.outputs.staticWebAppHostname
-output apiUrl string = application.outputs.apiUrl
-output postgresHostname string = application.outputs.postgresHostname
-output databaseName string = application.outputs.databaseName
+output appServicePlanName string = application.outputs.appServicePlanName
+output webAppName string = application.outputs.webAppName
+output webAppUrl string = application.outputs.webAppUrl
