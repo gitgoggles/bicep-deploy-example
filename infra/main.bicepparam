@@ -1,7 +1,7 @@
 using './main.bicep'
 
 param resourceGroupName = 'rg-bicep-deploy-example-prod-uks'
-param location = 'uksouth'
+param location = 'westcentralus'
 param workloadName = 'bicep-deploy-example'
 param environmentName = 'prod'
-param appServicePlanSku = 'B1'
+param appServicePlanSku = 'F1'
