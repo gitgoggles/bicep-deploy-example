@@ -49,7 +49,7 @@ app.MapGet("/weatherforecast", (HttpContext httpContext) =>
 
 app.MapGet("/", () =>
 		{
-			return "howdy";
+			return Results.Content("<h1>howdy</h1>", "text/html");
 		});
 
 
