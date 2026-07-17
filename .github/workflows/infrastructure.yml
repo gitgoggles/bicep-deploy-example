@@ -1,12 +1,12 @@
 name: Infrastructure
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "infra/**"
-      - ".github/workflows/infrastructure.yml"
+  # push:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - "infra/**"
+  #     - ".github/workflows/infrastructure.yml"
   workflow_dispatch:
 
 jobs:
