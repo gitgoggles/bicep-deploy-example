@@ -22,21 +22,21 @@ jobs:
           dotnet-version: "10.0.x"
 
       - name: Restore
-        run: dotnet restore src/Api/Api.csproj
+        run: dotnet restore CoolWebApp/CoolWebApp.csproj
 
       - name: Publish
-        run: dotnet publish src/Api/Api.csproj --configuration Release --no-restore --output "${{ runner.temp }}/publish"
+        run: dotnet publish CoolWebApp/CoolWebApp.csproj --configuration Release --no-restore --output "${{ runner.temp }}/publish"
 
       - name: Create deployment package
         run: |
           cd "${{ runner.temp }}/publish"
-          zip -r "${{ runner.temp }}/api.zip" .
+          zip -r "${{ runner.temp }}/CoolWebApp.zip" .
 
       - name: Upload deployment package
         uses: actions/upload-artifact@v4
         with:
-          name: api-package
-          path: ${{ runner.temp }}/api.zip
+          name: CoolWebApp-package
+          path: ${{ runner.temp }}/CoolWebApp.zip
           if-no-files-found: error
           retention-days: 1
 
@@ -54,7 +54,7 @@ jobs:
       - name: Download deployment package
         uses: actions/download-artifact@v4
         with:
-          name: api-package
+          name: CoolWebApp-package
           path: ${{ runner.temp }}
 
       - name: Log in to Azure with OIDC
@@ -79,4 +79,4 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ steps.infrastructure.outputs.web_app_name }}
-          package: ${{ runner.temp }}/api.zip
+          package: ${{ runner.temp }}/CoolWebApp.zip
