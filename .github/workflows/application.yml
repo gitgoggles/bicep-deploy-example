@@ -46,6 +46,7 @@ jobs:
     name: Deploy production API
     needs: build
     runs-on: ubuntu-latest
+    environment: production
     concurrency:
       group: production-deployment
       cancel-in-progress: false
