@@ -1,8 +1,8 @@
 targetScope = 'subscription'
 
-param resourceGroupName string
+param workloadName string = 'bicep-deploy-example'
+param resourceGroupName string = 'rg-${workloadName}-${environmentName}'
 param location string
-param workloadName string
 
 @allowed([
   'production'
