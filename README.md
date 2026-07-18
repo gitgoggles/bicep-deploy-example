@@ -1,7 +1,9 @@
 # bicep-deploy-example
 This repo contains a basic dotnet 10 webapp, but it's main purpose is to demonstrate Infrastructure as Code (IaC). 
 
-- Deployed app: [https://app-bicep-deploy-example-production-lbtltblbbsg7w.azurewebsites.net/](https://app-bicep-deploy-example-production-lbtltblbbsg7w.azurewebsites.net/)
+These are hosted on an Azure free tier, so give them a minute to load.
+- production: [https://app-bicep-deploy-example-production-lbtltblbbsg7w.azurewebsites.net/](https://app-bicep-deploy-example-production-lbtltblbbsg7w.azurewebsites.net/)
+- staging: [https://app-bicep-deploy-example-staging-prbblykd2aiem.azurewebsites.net/](https://app-bicep-deploy-example-staging-prbblykd2aiem.azurewebsites.net/)
 
 ## deployment
 The workflows are set to manual dispatch for demonstration purposes, but will connect to Azure via OIDC (no stored secret) provision a resource group, a VM, package the main branch and deploy it to the VM.
