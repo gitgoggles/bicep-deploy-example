@@ -1,25 +1,25 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# config
+NAME="bicep-deploy-example"
+ENVIRONMENT='staging'
+GITHUB_OWNER="gitgoggles"
+GITHUB_REPO="bicep-deploy-example"
+
 # azure cli and github cli need to be logged in.
 # the script will fail early if you are not.
 az account show
 gh auth status
 
-APP_NAME="bicep-deploy-example"
-GITHUB_OWNER="gitgoggles"
-GITHUB_REPO="bicep-deploy-example"
-ENVIRONMENT='production'
-
+APP_NAME="$NAME-$ENVIRONMENT"
 SUBSCRIPTION_ID="$(az account show --query id --output tsv)"
-GITHUB_OWNER_ID="$(gh api "repos/${GITHUB_ORG}/${GITHUB_REPO}" --jq '.owner.id')"
-GITHUB_REPO_ID="$(gh api "repos/${GITHUB_ORG}/${GITHUB_REPO}" --jq '.id')"
+GITHUB_OWNER_ID="$(gh api "repos/${GITHUB_OWNER}/${GITHUB_REPO}" --jq '.owner.id')"
+GITHUB_REPO_ID="$(gh api "repos/${GITHUB_OWNER}/${GITHUB_REPO}" --jq '.id')"
+TENANT_ID="$(az account show --query tenantId --output tsv)"
 
 APP_ID="$(az ad app create --display-name "$APP_NAME" --query appId --output tsv)"
-
-az ad sp create --id "$APP_ID"
-
-SP_OBJECT_ID="$(az ad sp show --id "$APP_ID" --query id --output tsv)"
+SP_OBJECT_ID="$(az ad sp create --id "$APP_ID" --query id --output tsv)"
 
 az role assignment create --assignee-object-id "$SP_OBJECT_ID" --assignee-principal-type ServicePrincipal --role Contributor --scope "/subscriptions/$SUBSCRIPTION_ID"
 
@@ -36,8 +36,7 @@ cat > federated-credential.json <<EOF
 EOF
 
 az ad app federated-credential create --id "$APP_ID" --parameters federated-credential.json
-
-TENANT_ID="$(az account show --query tenantId --output tsv)"
+rm federated-credential.json
 
 printf 'AZURE_CLIENT_ID=%s\n' "$APP_ID"
 printf 'AZURE_TENANT_ID=%s\n' "$TENANT_ID"
