@@ -1,6 +1,13 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using CoolWebApp.Components;
 using CoolWebApp.Models;
+using System.Globalization;
+using Microsoft.AspNetCore.Localization;
+
+var enGb = CultureInfo.GetCultureInfo("en-GB");
+
+CultureInfo.DefaultThreadCurrentCulture = enGb;
+CultureInfo.DefaultThreadCurrentUICulture = enGb;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +19,13 @@ if (!app.Environment.IsDevelopment())
 {
 	app.UseExceptionHandler("/Error");
 }
+
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+	DefaultRequestCulture = new RequestCulture(enGb),
+	SupportedCultures = [enGb],
+	SupportedUICultures = [enGb]
+});
 
 app.UseStaticFiles();
 app.UseAntiforgery();
