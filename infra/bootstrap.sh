@@ -42,6 +42,7 @@ printf 'AZURE_CLIENT_ID=%s\n' "$APP_ID"
 printf 'AZURE_TENANT_ID=%s\n' "$TENANT_ID"
 printf 'AZURE_SUBSCRIPTION_ID=%s\n' "$SUBSCRIPTION_ID"
 
+gh api --method PUT "repos/${GITHUB_OWNER}/${GITHUB_REPO}/environments/${ENVIRONMENT}"
 gh variable set AZURE_CLIENT_ID --body "${APP_ID}" --repo "${GITHUB_OWNER}/${GITHUB_REPO}" --env "${ENVIRONMENT}"
 gh variable set AZURE_TENANT_ID --body "${TENANT_ID}" --repo "${GITHUB_OWNER}/${GITHUB_REPO}" --env "${ENVIRONMENT}"
 gh variable set AZURE_SUBSCRIPTION_ID --body "${SUBSCRIPTION_ID}" --repo "${GITHUB_OWNER}/${GITHUB_REPO}" --env "${ENVIRONMENT}"

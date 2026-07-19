@@ -1,0 +1,43 @@
+@using CoolWebApp.Models
+@using System.Globalization
+
+<div class="table-card">
+    <table>
+        <caption>Current product inventory</caption>
+        <thead>
+            <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Product</th>
+                <th scope="col">Category</th>
+                <th scope="col" class="number">Price</th>
+                <th scope="col" class="number">Stock</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var product in Products)
+            {
+                <tr>
+                    <td>@product.Id</td>
+                    <td>@product.Name</td>
+                    <td>@product.Category</td>
+                    <td class="number">@product.Price.ToString("C")</td>
+                    <td class="number">
+                        @if (product.Stock == 0)
+                        {
+                            <span class="out-of-stock">Out of stock</span>
+                        }
+                        else
+                        {
+                            @product.Stock
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public required IReadOnlyList<Product> Products { get; set; }
+}

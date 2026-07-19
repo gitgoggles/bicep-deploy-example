@@ -1,0 +1,36 @@
+@page "/"
+
+<PageTitle>Product inventory · Razor + htmx</PageTitle>
+
+<section class="hero">
+    <p class="eyebrow">ASP.NET Core 10 + Razor components + htmx</p>
+    <h1>Product inventory</h1>
+    <p class="lede">
+        This page is a statically server-rendered Razor component. The table below is fetched
+        by htmx from a minimal API endpoint and rendered by another Razor component.
+    </p>
+</section>
+
+<section aria-labelledby="inventory-heading">
+    <div class="section-heading">
+        <h2 id="inventory-heading">Inventory</h2>
+        <button type="button"
+                class="button"
+                hx-get="/api/products/table"
+                hx-target="#product-table"
+                hx-swap="innerHTML"
+                hx-indicator="#table-loading">
+            Refresh
+        </button>
+    </div>
+
+    <div id="table-loading" class="htmx-indicator" role="status">Loading inventory…</div>
+    <div id="product-table"
+         hx-get="/api/products/table"
+         hx-trigger="load"
+         hx-swap="innerHTML"
+         hx-indicator="#table-loading"
+         aria-live="polite">
+        <noscript>JavaScript is required to load the inventory table.</noscript>
+    </div>
+</section>

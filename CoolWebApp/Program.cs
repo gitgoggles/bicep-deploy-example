@@ -1,61 +1,49 @@
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Identity.Web;
-using Microsoft.Identity.Abstractions;
-using Microsoft.Identity.Web.Resource;
+using Microsoft.AspNetCore.Http.HttpResults;
+using CoolWebApp.Components;
+using CoolWebApp.Models;
+using System.Globalization;
+using Microsoft.AspNetCore.Localization;
+
+var enGb = CultureInfo.GetCultureInfo("en-GB");
+
+CultureInfo.DefaultThreadCurrentCulture = enGb;
+CultureInfo.DefaultThreadCurrentUICulture = enGb;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-	.AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
-builder.Services.AddAuthorization();
-
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.AddRazorComponents();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (!app.Environment.IsDevelopment())
 {
-	app.MapOpenApi();
+	app.UseExceptionHandler("/Error");
 }
 
-// app.UseHttpsRedirection();
-
-var scopeRequiredByApi = app.Configuration["AzureAd:Scopes"] ?? "";
-var summaries = new[]
+app.UseRequestLocalization(new RequestLocalizationOptions
 {
-	"Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+	DefaultRequestCulture = new RequestCulture(enGb),
+	SupportedCultures = [enGb],
+	SupportedUICultures = [enGb]
+});
 
-app.MapGet("/weatherforecast", (HttpContext httpContext) =>
+app.UseStaticFiles();
+app.UseAntiforgery();
+
+app.MapRazorComponents<App>();
+
+app.MapGet("/api/products/table", () =>
 {
-	// httpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByApi);
+	Product[] products =
+	[
+		new(1001, "Mechanical keyboard", "Peripherals", 129.00m, 14),
+		new(1002, "4K monitor", "Displays", 549.99m, 7),
+		new(1003, "USB-C dock", "Accessories", 189.50m, 22),
+		new(1004, "Webcam", "Peripherals", 89.00m, 0),
+		new(1005, "Laptop stand", "Accessories", 64.95m, 31)
+	];
 
-	var forecast = Enumerable.Range(1, 5).Select(index =>
-		new WeatherForecast
-		(
-			DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-			Random.Shared.Next(-20, 55),
-			summaries[Random.Shared.Next(summaries.Length)]
-		))
-		.ToArray();
-	return forecast;
-})
-.WithName("GetWeatherForecast");
-// .RequireAuthorization();
-
-app.MapGet("/", () =>
-		{
-			return Results.Content("<h1>howdy</h1>", "text/html");
-		});
-
+	return new RazorComponentResult<ProductTable>(new { Products = products });
+});
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-	public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
