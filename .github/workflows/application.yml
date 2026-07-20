@@ -11,6 +11,7 @@ on:
 
 env:
   DEPLOYMENT_ENVIRONMENT: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
+  REPO: ${{ github.event.repository.name }}
 
 jobs:
   build:
@@ -75,7 +76,7 @@ jobs:
         id: infrastructure
         shell: bash
         run: |
-          web_app_name="$(az deployment sub show --name "$DEPLOYMENT_ENVIRONMENT" --query properties.outputs.webAppName.value --output tsv)"
+          web_app_name="$(az deployment sub show --name "$REPO-$DEPLOYMENT_ENVIRONMENT" --query properties.outputs.webAppName.value --output tsv)"
           if [[ -z "$web_app_name" ]]; then
             echo 'The infrastructure deployment did not return a Web App name.' >&2
             exit 1
