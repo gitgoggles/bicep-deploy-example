@@ -12,7 +12,7 @@ on:
 
 env:
   DEPLOYMENT_ENVIRONMENT: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
-  REPO: ${{ github.event.repository }}
+  REPO: ${{ github.event.repository.name }}
   SQL_ENTRA_ADMIN_LOGIN: ${{ vars.SQL_ENTRA_ADMIN_LOGIN }}
   SQL_ENTRA_ADMIN_OBJECT_ID: ${{ vars.SQL_ENTRA_ADMIN_OBJECT_ID }}
 

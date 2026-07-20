@@ -11,7 +11,7 @@ on:
 
 env:
   DEPLOYMENT_ENVIRONMENT: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
-  REPO: ${{ github.event.repository }}
+  REPO: ${{ github.event.repository.name }}
 
 jobs:
   build:
